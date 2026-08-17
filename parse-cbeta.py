@@ -83,6 +83,10 @@ def parse_xml_file(file_path: Path) -> dict:
 
   milestone_indexes = [ xml_order[m] for m in milestones ]
 
+  bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
+  byline_indexes = [ xml_order[bl] for bl in bylines ]
+  # print(byline_indexes)
+
   tick_spinner.set_label(f"{stem} collect <lb>")
   for elem_lb in xml_root.xpath("//*[local-name()='lb']"):
     tick_spinner.progress()
@@ -110,10 +114,19 @@ def parse_xml_file(file_path: Path) -> dict:
     if i == 0:
       continue
 
+    if len(byline_indexes) == 0:
+      after_byline = False
+    elif j < byline_indexes[0]:
+      after_byline = False
+    else:
+      after_byline = True
+
+
     seg = segments[i-1]
     juan = Juan(
       fun = elem_juan.get("fun"),
       n = elem_juan.get("n"),
+      after_byline = after_byline
     )
     seg.juans.append(juan)
 
