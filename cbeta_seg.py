@@ -193,6 +193,7 @@ class Juan:
   n: str | None = None
   heads: list[JuanHead] = field(default_factory = list)
   mulus: list[Mulu] = field(default_factory = list)
+  after_byline: bool | None = None
 
   @classmethod
   def from_dict(cls, dic, check_heads=False, check_mulus=False):
@@ -200,13 +201,28 @@ class Juan:
     n = dic["n"] or None
     heads = [ JuanHead.from_dict(h) for h in dic["heads"] ]
     mulus = [ Mulu.from_dict(h) for h in dic["mulus"] ]
-    return Juan(fun=fun, n=n, heads=heads, mulus=mulus)
+    after_byline = dic["after_byline"] if "after_byline" in dic else None
+    return Juan(fun=fun, n=n, heads=heads, mulus=mulus, after_byline=after_byline)
 
   def is_open(self):
     return (self.fun == "open")
 
   def is_close(self):
     return (self.fun == "close")
+
+  def after_byline(self):
+    return self.after_byline
+
+  def before_byline(self):
+    return None if self.after_byline is None else not self.after_byline
+
+  def relative_with_byline(self):
+    if self.after_byline is None:
+      return "_"
+    elif self.after_byline:
+      return "A"
+    else:
+      return "B"
 
   def n_parsed(self):
     return JuanNumber(self.n)
@@ -521,8 +537,14 @@ class Segment:
     juans_close = self.get_juans_close()
 
     self._cache.juan_ns = AttrDict()
-    self._cache.juan_ns.open = ",".join(str(j.n) for j in juans_open) or "(none)"
-    self._cache.juan_ns.close = ",".join(str(j.n) for j in juans_close) or "(none)"
+    self._cache.juan_ns.open = ",".join([
+      f"{str(j.n)}:{j.relative_with_byline()}"
+      for j in juans_open
+    ]) or "(none)"
+    self._cache.juan_ns.close = ",".join([
+      f"{str(j.n)}:{j.relative_with_byline()}"
+      for j in juans_close
+    ]) or "(none)"
 
     unmatched = AttrDict.from_dict({"open": 0, "close": 0})
 
