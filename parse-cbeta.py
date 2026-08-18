@@ -128,9 +128,11 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
   tick_spinner.set_label(f"{stem} collect element ordering")
   xml_order = {}
+  xml_elems = []
   for i, elem in enumerate(xml_root.iter()):
     tick_spinner.progress()
     xml_order[elem] = i
+    xml_elems.append(elem)
 
   tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
@@ -140,10 +142,6 @@ def parse_xml_file(file_path: Path, args) -> dict:
     segments.append(Segment(n=m.get("n"), unit=m.get("unit")))
 
   milestone_indexes = [ xml_order[m] for m in milestones ]
-
-  bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
-  byline_indexes = [ xml_order[bl] for bl in bylines ]
-  # print(byline_indexes)
 
   tick_spinner.set_label(f"{stem} collect <lb>")
   for elem_lb in xml_root.xpath("//*[local-name()='lb']"):
@@ -160,6 +158,27 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
     except:
       print(f"No segment would include <lb n='{lb_n}'>", file=sys.stderr)
+
+  tick_spinner.set_label(f"{stem} collect <byline>")
+  bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
+  byline_indexes = [ xml_order[bl] for bl in bylines ]
+  for i, bl in zip(byline_indexes, bylines):
+    lb_n = next(
+      xml_elems[j].get("n")
+      for j in range(i - 1, -1, -1)
+      if get_localname(xml_elems[j]) == "lb"
+    )
+    bl_dic = {
+      "text":    "".join(collect_texts_from_node(bl, strip = True)),
+      "cb_type": get_attr_by_local(bl, "type"),
+      "lb_n":    lb_n,
+    }
+    j = bisect_left(milestone_indexes, i)
+    if j > 0:
+      seg = segments[j-1]
+      seg.bylines.append(ByLine.from_dict(bl_dic))
+    else:
+      print(f"No segment would include {bl_dic}", file=sys.stderr)
 
 
   tick_spinner.set_label(f"{stem} collect <cb:juan>")
