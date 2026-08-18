@@ -11,7 +11,9 @@ from bisect import bisect_left
 
 from dataclasses import asdict
 
-from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, Byline, Segment
+from cbeta_seg import Mulu, Byline, RelativeToByline
+from cbeta_seg import JuanNumber, JuanRange, JuanHead, Juan
+from cbeta_seg import Segment
 from cbeta_seg import remove_underscore_keys_in_obj
 from tick_spinner import TickSpinner
 from superscript import fromStringASCII as to_sup
@@ -192,18 +194,18 @@ def parse_xml_file(file_path: Path, args) -> dict:
       continue
 
     if len(byline_indexes) == 0:
-      after_byline = None
+      r2bl = RelativeToByline.NO_BYLINE
     elif j < byline_indexes[0]:
-      after_byline = False
+      r2bl = RelativeToByline.BEFORE
     else:
-      after_byline = True
+      r2bl = RelativeToByline.AFTER
 
 
     seg = segments[i-1]
     juan = Juan(
       fun = elem_juan.get("fun"),
       n = elem_juan.get("n"),
-      after_byline = after_byline
+      relative_to_byline = r2bl,
     )
     seg.juans.append(juan)
 
