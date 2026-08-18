@@ -48,7 +48,7 @@ def parse_args():
     log_level = logging.CRITICAL
 
   if args.log:
-    logging.basicConfig(level=log_level, filename=args.log)
+    logging.basicConfig(level=log_level, filename=args.log, filemode="w")
   else:
     logging.basicConfig(level=log_level, stream=sys.stderr)
 
