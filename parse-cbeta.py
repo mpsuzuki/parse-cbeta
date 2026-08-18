@@ -11,7 +11,7 @@ from bisect import bisect_left
 
 from dataclasses import asdict
 
-from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, Segment
+from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, ByLine, Segment
 from cbeta_seg import remove_underscore_keys_in_obj
 from tick_spinner import TickSpinner
 from superscript import fromStringASCII as to_sup
