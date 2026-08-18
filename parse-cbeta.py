@@ -79,6 +79,25 @@ def generate_key_from_filename(file_path: Path) -> str:
   return stem
 
 
+def collect_texts_from_node(nd, strip = False):
+  if hasattr(nd, "tag"):
+    texts = [ t for t in nd.itertext() ]
+  else:
+    texts = [ str(nd) ]
+  return [ t.strip() if strip else t for t in texts ]
+
+
+def written_tag(nd):
+  if not hasattr(nd, "tag"):
+    return "(none)"
+
+  localname = etree.QName(nd).localname
+  if nd.prefix is None:
+    return localname
+
+  return f"{nd.prefix}:{localname}"
+
+
 def parse_xml_file(file_path: Path, args) -> dict:
   stem = file_path.stem
   tick_spinner = TickSpinner(tick_interval = 10)
