@@ -11,7 +11,7 @@ from bisect import bisect_left
 
 from dataclasses import asdict
 
-from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, ByLine, Segment
+from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, Byline, Segment
 from cbeta_seg import remove_underscore_keys_in_obj
 from tick_spinner import TickSpinner
 from superscript import fromStringASCII as to_sup
@@ -176,7 +176,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
     j = bisect_left(milestone_indexes, i)
     if j > 0:
       seg = segments[j-1]
-      seg.bylines.append(ByLine.from_dict(bl_dic))
+      seg.bylines.append(Byline.from_dict(bl_dic))
     else:
       print(f"No segment would include {bl_dic}", file=sys.stderr)
 

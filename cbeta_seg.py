@@ -453,14 +453,14 @@ class JuanStack:
     return sum(ev.is_bad() for ev in self.events)
 
 @dataclass
-class ByLine:
+class Byline:
   text:    str | None	# <byline>...</byline>
   cb_type: str | None	# <byline cb:type="...">
   lb_n:    str | None	# the last <lb n="..."/> before current <byline>
 
   @classmethod
   def from_dict(cls, dic):
-    return ByLine(
+    return Byline(
       text    = dic["text"],
       cb_type = dic["cb_type"],
       lb_n    = dic["lb_n"],
@@ -480,7 +480,7 @@ class Segment:
   # belows are determined by the <cb:juan>...</cb:juan> elements
   #   after current milestone and before next milestione
   juans: list[Juan] = field(default_factory = list)
-  bylines: list[ByLine] = field(default_factory = list)
+  bylines: list[Byline] = field(default_factory = list)
 
   _cache: AttrDict = field(default_factory = AttrDict)
   _stack: JuanStack = field(default_factory = JuanStack)
@@ -493,7 +493,7 @@ class Segment:
     lb_n_first = dic["lb_n_first"] or None
     lb_n_last = dic["lb_n_last"] or None
     juans = [ Juan.from_dict(jd) for jd in dic["juans"] ]
-    bylines = [ ByLine.from_dict(bld) for bld in dic["bylines"] ]
+    bylines = [ Byline.from_dict(bld) for bld in dic["bylines"] ]
     return Segment(n=n, unit=unit,
                   lb_n_first=lb_n_first,
                   lb_n_last=lb_n_last,
