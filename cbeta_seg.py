@@ -480,6 +480,7 @@ class Segment:
   # belows are determined by the <cb:juan>...</cb:juan> elements
   #   after current milestone and before next milestione
   juans: list[Juan] = field(default_factory = list)
+  bylines: list[ByLine] = field(default_factory = list)
 
   _cache: AttrDict = field(default_factory = AttrDict)
   _stack: JuanStack = field(default_factory = JuanStack)
@@ -492,10 +493,12 @@ class Segment:
     lb_n_first = dic["lb_n_first"] or None
     lb_n_last = dic["lb_n_last"] or None
     juans = [ Juan.from_dict(jd) for jd in dic["juans"] ]
+    bylines = [ ByLine.from_dict(bld) for bld in dic["bylines"] ]
     return Segment(n=n, unit=unit,
                   lb_n_first=lb_n_first,
                   lb_n_last=lb_n_last,
-                  juans=juans)
+                  juans=juans,
+                  bylines=bylines)
 
 
   def get_juans_open(self):
