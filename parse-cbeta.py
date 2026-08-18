@@ -173,17 +173,25 @@ def parse_xml_file(file_path: Path, args) -> dict:
     for elem_jhead in elem_juan.xpath(".//*[local-name()='jhead']"):
       tick_spinner.progress()
 
+      seen_title = False
       jh_prefixes = []
       jh_title = []
       jh_postfixes = []
       for nd in elem_jhead.xpath("./node()"):
-        if isinstance(nd, str):
-          if len(jh_title) == 0:
-            jh_prefixes.append(nd.strip())
+        if hasattr(nd, "tag"):
+          localname = etree.QName(nd).localname
+          if localname in ("title"):
+            seen_title = True
+            jh_title += collect_texts_from_node(nd, strip = True)
           else:
-            jh_postfixes.append(nd.strip())
-        elif etree.QName(nd).localname == "title":
-          jh_title.append((nd.text or "").strip())
+            logging.debug(
+              f"{file_path}: ignore <{written_tag(nd)}> element "
+              f"under <{written_tag(elem_jhead)}>"
+            )
+        elif seen_title:
+          jh_postfixes += collect_texts_from_node(nd, strip = True)
+        else:
+          jh_prefixes += collect_texts_from_node(nd, strip = True)
 
       jhead = JuanHead(
         head  = "".join(jh_prefixes),
