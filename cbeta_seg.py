@@ -453,6 +453,20 @@ class JuanStack:
     return sum(ev.is_bad() for ev in self.events)
 
 @dataclass
+class ByLine:
+  text:    str | None	# <byline>...</byline>
+  cb_type: str | None	# <byline cb:type="...">
+  lb_n:    str | None	# the last <lb n="..."/> before current <byline>
+
+  @classmethod
+  def from_dict(cls, dic):
+    return ByLine(
+      text    = dic["text"],
+      cb_type = dic["cb_type"],
+      lb_n    = dic["lb_n"],
+    )
+
+@dataclass
 class Segment:
   n: str | None		# <milestone n="..."/>
   unit: str | None	# <milestone unit="..."/>
