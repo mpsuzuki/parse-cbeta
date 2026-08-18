@@ -2,7 +2,18 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 from enum import IntEnum
+
 from attrdict import AttrDict
+
+# StrEnum is available since Python 3.11
+try:
+  from enum import StrEnum
+except ImportError:
+  from enum import Enum
+
+  class StrEnum(str, Enum):
+    def __str__(self):
+      return self.value
 
 #
 # use remove_underscore_keys_in_obj(asdict(obj))
@@ -185,6 +196,23 @@ class Mulu:
     type = dic["type"] or None
     level = dic["level"] or None
     return Mulu(n=n, type=type, level=level)
+
+
+class RelativeToByline(StrEnum):
+  UNDEFINED = "UNDEFINED"
+  NO_BYLINE = "NO_BYLINE"
+  BEFORE = "BEFORE"
+  AFTER = "AFTER"
+
+  def c(self):
+    if self == RelativeToByline.NO_BYLINE:
+      return "_"
+    elif self == RelativeToByline.BEFORE:
+      return "B"
+    elif self == RelativeToByline.AFTER:
+      return "A"
+    else:
+      return "?"
 
 
 @dataclass
