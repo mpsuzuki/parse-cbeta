@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import sys
 import json
 import argparse
@@ -13,6 +14,7 @@ from dataclasses import asdict
 from cbeta_seg import JuanNumber, JuanRange, JuanHead, Mulu, Juan, Segment
 from cbeta_seg import remove_underscore_keys_in_obj
 from tick_spinner import TickSpinner
+from superscript import fromStringASCII as to_sup
 
 def parse_args():
   parser = argparse.ArgumentParser(
@@ -214,6 +216,19 @@ def parse_xml_file(file_path: Path, args) -> dict:
           str_elem += try_key_value_attr(nd, "level")
           str_elem += try_key_value_attr(nd, "ref")
           str_text = "".join(collect_texts_from_node(nd, strip = True))
+
+          if localname == "g":
+            g_strings = "".join(collect_texts_from_node(nd, strip = True))
+            g_ref = to_sup(
+              re.sub(r"CB0+", "CB", nd.get("ref").split("#", 1).pop()).lower()
+            )
+            logging.debug(
+              f"{file_path}: picked <{str_elem}> under <{str_jhead}>"
+              f" has string \"{''.join(g_strings) + g_ref}\""
+            )
+            dest_strings += g_strings
+            dest_strings += [ g_ref ]
+            continue
 
           if len(str_text):
             logging.debug(
