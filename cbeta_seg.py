@@ -272,7 +272,11 @@ class OpenCloseMatch(IntEnum):
     return [ entry.name for entry in OpenCloseMatch ]
 
   @classmethod
-  def name2int(cls, i):
+  def name2int(cls, nm):
+    return OpenCloseMatch[nm].value
+
+  @classmethod
+  def int2name(cls, i):
     return OpenCloseMatch(i).name
 
   def __str__(self):
