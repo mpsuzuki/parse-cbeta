@@ -192,7 +192,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
       continue
 
     if len(byline_indexes) == 0:
-      after_byline = False
+      after_byline = None
     elif j < byline_indexes[0]:
       after_byline = False
     else:
