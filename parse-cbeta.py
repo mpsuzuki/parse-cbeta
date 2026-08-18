@@ -79,7 +79,7 @@ def generate_key_from_filename(file_path: Path) -> str:
   return stem
 
 
-def parse_xml_file(file_path: Path) -> dict:
+def parse_xml_file(file_path: Path, args) -> dict:
   stem = file_path.stem
   tick_spinner = TickSpinner(tick_interval = 10)
   tick_spinner.set_label(f"{stem} parsing XML")
@@ -239,7 +239,7 @@ def main():
   for i, xml_file in enumerate(target_files, start=1):
     print_progress(i, len(target_files))
     dict_key = generate_key_from_filename(xml_file)
-    segments = parse_xml_file(xml_file)
+    segments = parse_xml_file(xml_file, args = args)
     meta_dict[dict_key] = {
       "xml_file": Path(xml_file).name,
       "segments": segments,
