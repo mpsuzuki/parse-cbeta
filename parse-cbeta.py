@@ -20,10 +20,10 @@ def parse_args():
   parser.add_argument("files", nargs="*",
     help="Target XML file(s)"
   )
-  parser.add_argument("-d", "--dir", action="append",
+  parser.add_argument("--dir", "-d", action="append",
     help="Target directory containing XML files (can be specified multiple times)"
   )
-  parser.add_argument("-o", "--output",
+  parser.add_argument("--output", "-o",
     help="Output JSON file path (prints to stdout if omitted)"
   )
   parser.add_argument("--summary", action="store_true",
