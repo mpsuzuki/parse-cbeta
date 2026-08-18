@@ -3,6 +3,7 @@
 import sys
 import json
 import argparse
+import logging
 from pathlib import Path
 from lxml import etree
 from bisect import bisect_left
@@ -29,11 +30,29 @@ def parse_args():
   parser.add_argument("--summary", action="store_true",
     help="Print summary"
   )
+  parser.add_argument("--log", type=str,
+    help="Log file (progress & spinner is not logged)"
+  )
+  parser.add_argument("--debug", action="store_true",
+    help="Debug"
+  )
 
   args = parser.parse_args()
 
   if not args.files and not args.dir:
     parser.error("Please specify target XML file(s) or directory with -d/--dir.")
+
+  if args.debug:
+    log_level = logging.DEBUG
+  else:
+    log_level = logging.CRITICAL
+
+  if args.log:
+    logging.basicConfig(level=log_level, filename=args.log)
+  else:
+    logging.basicConfig(level=log_level, stream=sys.stderr)
+
+  args.logger = logging.getLogger(__name__)
 
   return args
 
