@@ -106,6 +106,12 @@ def written_tag(nd):
   return f"{nd.prefix}:{localname}"
 
 
+def try_key_value_attr(nd, attr_k):
+  if (attr_v := nd.get(attr_k)) is None:
+    return ""
+  return f" {attr_k}=\"{attr_v}\""
+
+
 def parse_xml_file(file_path: Path, args) -> dict:
   stem = file_path.stem
   tick_spinner = TickSpinner(tick_interval = 10)
@@ -179,6 +185,11 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
     tick_spinner.set_label(f"{stem} jhead <cb:jhead>")
     for elem_jhead in elem_juan.xpath(".//*[local-name()='jhead']"):
+      str_jhead = written_tag(elem_jhead)
+      str_jhead += try_key_value_attr(elem_jhead, "n")
+      str_jhead += try_key_value_attr(elem_jhead, "place")
+      str_jhead += try_key_value_attr(elem_jhead, "type")
+      str_jhead += try_key_value_attr(elem_jhead, "level")
       tick_spinner.progress()
 
       seen_title = False
@@ -186,20 +197,33 @@ def parse_xml_file(file_path: Path, args) -> dict:
       jh_title = []
       jh_postfixes = []
       for nd in elem_jhead.xpath("./node()"):
-        if hasattr(nd, "tag"):
+        dest_strings = jh_postfixes if seen_title else jh_prefixes
+        if not hasattr(nd, "tag"):
+          dest_strings += collect_texts_from_node(nd, strip = True)
+        else:
           localname = etree.QName(nd).localname
           if localname in ("title"):
             seen_title = True
             jh_title += collect_texts_from_node(nd, strip = True)
+            continue
+
+          str_elem = written_tag(nd)
+          str_elem += try_key_value_attr(nd, "n")
+          str_elem += try_key_value_attr(nd, "place")
+          str_elem += try_key_value_attr(nd, "type")
+          str_elem += try_key_value_attr(nd, "level")
+          str_elem += try_key_value_attr(nd, "ref")
+          str_text = "".join(collect_texts_from_node(nd, strip = True))
+
+          if len(str_text):
+            logging.debug(
+              f"{file_path}: ignored <{str_elem}> under <{str_jhead}>"
+              f" has string \"{''.join(collect_texts_from_node(nd, strip = True))}\""
+            )
           else:
             logging.debug(
-              f"{file_path}: ignore <{written_tag(nd)}> element "
-              f"under <{written_tag(elem_jhead)}>"
+              f"{file_path}: ignored <{str_elem}> under <{str_jhead}>"
             )
-        elif seen_title:
-          jh_postfixes += collect_texts_from_node(nd, strip = True)
-        else:
-          jh_prefixes += collect_texts_from_node(nd, strip = True)
 
       jhead = JuanHead(
         head  = "".join(jh_prefixes),
