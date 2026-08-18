@@ -97,11 +97,15 @@ def collect_texts_from_node(nd, strip = False):
   return [ t.strip() if strip else t for t in texts ]
 
 
+def get_localname(nd):
+  return etree.QName(nd).localname
+
+
 def written_tag(nd):
   if not hasattr(nd, "tag"):
     return "(none)"
 
-  localname = etree.QName(nd).localname
+  localname = get_localname(nd)
   if nd.prefix is None:
     return localname
 
