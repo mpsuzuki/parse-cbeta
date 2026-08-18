@@ -79,6 +79,14 @@ def generate_key_from_filename(file_path: Path) -> str:
   return stem
 
 
+def get_attr_by_local(elem, nm):
+  nsnm = "}" + nm
+  for k, v in elem.attrib.items():
+    if k.endswith(nsnm) or k == nm:
+      return v
+  return None
+
+
 def collect_texts_from_node(nd, strip = False):
   if hasattr(nd, "tag"):
     texts = [ t for t in nd.itertext() ]
