@@ -73,16 +73,6 @@ def parse_args():
   return args
 
 
-def get_local_tag(tag: str) -> str:
-  """Extract local tag name by removing XML namespace."""
-  if "}" in tag:
-    return tag.split("}")[-1]
-  elif ":" in tag:
-    return tag.split(":")[-1]
-  else:
-    return tag
-
-
 def generate_key_from_filename(file_path: Path) -> str:
   """
   Generate a dictionary key from the filename.
