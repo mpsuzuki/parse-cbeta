@@ -100,6 +100,9 @@ def collect_texts_from_node(nd, strip = False):
 
 
 def get_localname(nd):
+  if not isinstance(nd.tag, str):
+    return None
+
   return etree.QName(nd).localname
 
 
