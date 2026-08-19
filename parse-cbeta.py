@@ -10,6 +10,7 @@ from lxml import etree
 from bisect import bisect_left
 
 from dataclasses import asdict
+from dataclasses import field, dataclass
 
 from cbeta_seg import Mulu, Byline, RelativeToByline
 from cbeta_seg import JuanNumber, JuanRange, JuanHead, Juan
@@ -126,6 +127,74 @@ def try_key_value_attr(nd, attr_k):
   if (attr_v := nd.get(attr_k)) is None:
     return ""
   return f" {attr_k}=\"{attr_v}\""
+
+
+@dataclass
+class XML_DB_lb:
+  xml_order: dict = field(default_factory = dict)
+  xml_elems: list = field(default_factory = list)
+
+  def get_previous_elem_for_index(self, tag, i):
+    try:
+      return next(
+        self.xml_elems[j]
+        for j in range(i - 1, -1, -1)
+        if get_localname(self.xml_elems[j]) == tag
+      )
+    except:
+      return None
+
+  def get_next_elem_for_index(self, tag, i):
+    try:
+      return next(
+        self.xml_elems[j]
+        for j in range(i, len(self.xml_elems))
+        if get_localname(self.xml_elems[j]) == tag
+      )
+    except:
+      return None
+
+  def get_previous_elem_for_elem(self, tag, elem):
+    try:
+      i = self.xml_order[elem]
+      return self.get_previous_elem_for_index(tag, i)
+    except:
+      return None
+
+  def get_next_elem_for_elem(self, tag, elem):
+    try:
+      i = self.xml_order[elem]
+      return self.get_next_elem_for_index(tag, i)
+    except:
+      return None
+
+  def get_previous_lb_attr_n_for_index(self, i):
+    try:
+      elem_lb = self.get_previous_elem_for_index("lb", i)
+      return elem_lb.get("n")
+    except:
+      return None
+
+  def get_previous_lb_attr_n_for_elem(self, elem):
+    try:
+      i = self.xml_order[elem]
+      return self.get_previous_lb_attr_n_for_index(i)
+    except:
+      return None
+
+  def get_next_lb_attr_n_for_index(self, i):
+    try:
+      elem_lb = self.get_next_elem_for_index("lb", i)
+      return elem_lb.get("n")
+    except:
+      return None
+
+  def get_next_lb_attr_n_for_elem(self, elem):
+    try:
+      i = self.xml_order[elem]
+      return self.get_next_lb_attr_n_for_index(i)
+    except:
+      return None
 
 
 @profile
