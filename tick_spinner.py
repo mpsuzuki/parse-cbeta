@@ -13,6 +13,9 @@ class TickSpinner:
 
 
   def progress(self):
+    if self.tick_interval < 1:
+      return
+
     self.count += 1
 
     if self.count % self.tick_interval != 0:
@@ -28,6 +31,8 @@ class TickSpinner:
     )
 
   def finish(self):
+    if self.tick_interval < 1:
+      return
     print("\r ", file=self.file)
 
   def set_spinner(self, *chars: str):
