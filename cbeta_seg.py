@@ -223,14 +223,19 @@ class Juan:
   mulus: list[Mulu] = field(default_factory = list)
   relative_to_byline: RelativeToByline = RelativeToByline.UNDEFINED
 
+  def __post_init__(self):
+    r2bl = self.relative_to_byline
+    if not isinstance(r2bl, RelativeToByline):
+      self.relative_to_byline = RelativeToByline(r2bl)
+
   @classmethod
   def from_dict(cls, dic, check_heads=False, check_mulus=False):
     fun = dic["fun"] or None
     n = dic["n"] or None
     heads = [ JuanHead.from_dict(h) for h in dic["heads"] ]
     mulus = [ Mulu.from_dict(h) for h in dic["mulus"] ]
-    relative_to_byline = dic["relative_to_byline"] or RelativeToByline.UNDEFINED
-    return Juan(fun=fun, n=n, heads=heads, mulus=mulus, relative_to_byline=relative_to_byline)
+    r2bl = dic["relative_to_byline"] or RelativeToByline.UNDEFINED
+    return Juan(fun=fun, n=n, heads=heads, mulus=mulus, relative_to_byline=r2bl)
 
   def is_open(self):
     return (self.fun == "open")
@@ -579,11 +584,11 @@ class Segment:
 
     self._cache.juan_ns = AttrDict()
     self._cache.juan_ns.open = ",".join([
-      f"{str(j.n)}:{j.relative_with_byline()}"
+      f"{str(j.n)}:{j.relative_to_byline.c()}"
       for j in juans_open
     ]) or "(none)"
     self._cache.juan_ns.close = ",".join([
-      f"{str(j.n)}:{j.relative_with_byline()}"
+      f"{str(j.n)}:{j.relative_to_byline.c()}"
       for j in juans_close
     ]) or "(none)"
 
