@@ -111,6 +111,9 @@ def written_tag(nd):
     return "(none)"
 
   localname = get_localname(nd)
+  if localname is None:
+    return "(none)"
+
   if nd.prefix is None:
     return localname
 
@@ -136,8 +139,13 @@ def parse_xml_file(file_path: Path, args) -> dict:
   xml_elems = []
   for i, elem in enumerate(xml_root.iter()):
     tick_spinner.progress()
-    xml_order[elem] = i
-    xml_elems.append(elem)
+    try:
+      xml_order[elem] = i
+      # logging.debug(f"i={i}, tag={get_localname(elem)}")
+      xml_elems.append(elem)
+    except Exception:
+      # logging.debug(f"i={i} type={type(elem)} repr={repr(elem)}")
+      pass
 
   tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
