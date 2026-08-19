@@ -196,6 +196,19 @@ class XML_DB_lb:
     except:
       return None
 
+def collect_parental_tagnames(elem, upto = None):
+  cur = elem
+  tags = [ written_tag(cur) ]
+  while (cur := cur.getparent()) is not None:
+    cur_tag = written_tag(cur)
+    tags.append(cur_tag)
+    if upto is None:
+      continue
+    if cur_tag == upto:
+      break
+
+  return reversed(tags)
+
 
 @profile
 def parse_xml_file(file_path: Path, args) -> dict:
@@ -251,6 +264,25 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
     except:
       print(f"No segment would include <lb n='{lb_n}'>", file=sys.stderr)
+
+  if args.verbose: tick_spinner.set_label(f"{stem} collect <cb:docNumber>")
+  docNumbers = xml_root.xpath("//*[local-name()='docNumber']")
+  if len(docNumbers) == 0:
+    logging.warn(f"{file_path}: <cb:docNumber> is not found")
+  seen_title = False
+  for i, dn in enumerate(docNumbers):
+    if (elem_title := xml_db_lb.get_next_elem_for_elem("title", dn)) is None:
+      continue
+    parental_tags = "/".join(collect_parental_tagnames(elem_title, "body"))
+    title_text = "".join(collect_texts_from_node(elem_title))
+    lb_n = xml_db_lb.get_previous_lb_attr_n_for_elem(elem_title)
+    logging.info(
+      f"{file_path}: title[{i}] @ {lb_n} {parental_tags} \"{title_text}\""
+    )
+    seen_title = True
+  if not seen_title:
+    logging.warn(f"{file_path}: no <title> is found")
+
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <byline>")
   bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
