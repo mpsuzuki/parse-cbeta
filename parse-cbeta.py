@@ -154,11 +154,11 @@ def parse_xml_file(file_path: Path, args) -> dict:
   xml_tree = etree.parse(file_path)
   xml_root = xml_tree.getroot()
 
-  tick_spinner.set_label(f"{stem} collect element ordering")
+  if args.verbose: tick_spinner.set_label(f"{stem} collect element ordering")
   xml_order = {}
   xml_elems = []
   for i, elem in enumerate(xml_root.iter()):
-    tick_spinner.progress()
+    # if args.verbose: tick_spinner.progress()
     try:
       xml_order[elem] = i
       # logging.debug(f"i={i}, tag={get_localname(elem)}")
@@ -167,18 +167,18 @@ def parse_xml_file(file_path: Path, args) -> dict:
       # logging.debug(f"i={i} type={type(elem)} repr={repr(elem)}")
       pass
 
-  tick_spinner.set_label(f"{stem} collect <milestone>")
+  if args.verbose: tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
   segments = []
   for m in milestones:
-    tick_spinner.progress()
+    if args.verbose: tick_spinner.progress()
     segments.append(Segment(n=m.get("n"), unit=m.get("unit")))
 
   milestone_indexes = [ xml_order[m] for m in milestones ]
 
-  tick_spinner.set_label(f"{stem} collect <lb>")
+  if args.verbose: tick_spinner.set_label(f"{stem} collect <lb>")
   for elem_lb in xml_root.xpath("//*[local-name()='lb']"):
-    tick_spinner.progress()
+    # if args.verbose: tick_spinner.progress()
     lb_index = xml_order[elem_lb]
     try:
       lb_n = elem_lb.get("n")
@@ -192,7 +192,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
     except:
       print(f"No segment would include <lb n='{lb_n}'>", file=sys.stderr)
 
-  tick_spinner.set_label(f"{stem} collect <byline>")
+  if args.verbose: tick_spinner.set_label(f"{stem} collect <byline>")
   bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
   byline_indexes = [ xml_order[bl] for bl in bylines ]
   for i, bl in zip(byline_indexes, bylines):
@@ -214,9 +214,9 @@ def parse_xml_file(file_path: Path, args) -> dict:
       print(f"No segment would include {bl_dic}", file=sys.stderr)
 
 
-  tick_spinner.set_label(f"{stem} collect <cb:juan>")
+  if args.verbose: tick_spinner.set_label(f"{stem} collect <cb:juan>")
   for elem_juan in xml_root.xpath("//*[local-name()='body']//*[local-name()='juan']"):
-    tick_spinner.progress()
+    if args.verbose: tick_spinner.progress()
     # print("=", end="", file=sys.stderr, flush=True)
     j = xml_order[elem_juan]
     i = bisect_left(milestone_indexes, j)
@@ -241,14 +241,14 @@ def parse_xml_file(file_path: Path, args) -> dict:
     seg.juans.append(juan)
 
 
-    tick_spinner.set_label(f"{stem} jhead <cb:jhead>")
+    if args.verbose: tick_spinner.set_label(f"{stem} jhead <cb:jhead>")
     for elem_jhead in elem_juan.xpath(".//*[local-name()='jhead']"):
       str_jhead = written_tag(elem_jhead)
       str_jhead += try_key_value_attr(elem_jhead, "n")
       str_jhead += try_key_value_attr(elem_jhead, "place")
       str_jhead += try_key_value_attr(elem_jhead, "type")
       str_jhead += try_key_value_attr(elem_jhead, "level")
-      tick_spinner.progress()
+      if args.verbose: tick_spinner.progress()
 
       seen_title = False
       jh_prefixes = []
@@ -304,7 +304,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
       juan.heads.append(jhead)
 
 
-    tick_spinner.set_label(f"{stem} jhead <mulu>")
+    if args.verbose: tick_spinner.set_label(f"{stem} jhead <mulu>")
     for elem_mulu in elem_juan.xpath(".//*[local-name()='mulu']"):
       # print("-", end="", file=sys.stderr, flush=True)
       mulu = Mulu(
@@ -316,7 +316,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
     # print("", file=sys.stderr, flush=True)
 
-  tick_spinner.finish()
+  if args.verbose: tick_spinner.finish()
   return segments
 
 
