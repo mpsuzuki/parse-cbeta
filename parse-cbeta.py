@@ -225,6 +225,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
     except Exception:
       # logging.debug(f"i={i} type={type(elem)} repr={repr(elem)}")
       pass
+  xml_db_lb = XML_DB_lb(xml_order, xml_elems)
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
@@ -255,15 +256,10 @@ def parse_xml_file(file_path: Path, args) -> dict:
   bylines = [ bl for bl in xml_root.xpath("//*[local-name()='byline']") ]
   byline_indexes = [ xml_order[bl] for bl in bylines ]
   for i, bl in zip(byline_indexes, bylines):
-    lb_n = next(
-      xml_elems[j].get("n")
-      for j in range(i - 1, -1, -1)
-      if get_localname(xml_elems[j]) == "lb"
-    )
     bl_dic = {
       "text":    "".join(collect_texts_from_node(bl, strip = True)),
       "cb_type": get_attr_by_local(bl, "type"),
-      "lb_n":    lb_n,
+      "lb_n":    xml_db_lb.get_previous_lb_attr_n_for_index(i),
     }
     j = bisect_left(milestone_indexes, i)
     if j > 0:
