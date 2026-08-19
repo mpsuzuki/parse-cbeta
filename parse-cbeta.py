@@ -40,6 +40,9 @@ def parse_args():
   parser.add_argument("--debug", action="store_true",
     help="Debug"
   )
+  parser.add_argument("--verbose", "-v", action="count", default=0,
+    help="Increase verbose level"
+  )
 
   args = parser.parse_args()
 
@@ -128,7 +131,14 @@ def try_key_value_attr(nd, attr_k):
 
 def parse_xml_file(file_path: Path, args) -> dict:
   stem = file_path.stem
-  tick_spinner = TickSpinner(tick_interval = 10)
+  if args.verbose > 3:
+    tick_spinner = TickSpinner(tick_interval = 10)
+  elif args.verbose > 2:
+    tick_spinner = TickSpinner(tick_interval = 100)
+  elif args.verbose > 1:
+    tick_spinner = TickSpinner(tick_interval = 1000)
+  else:
+    tick_spinner = TickSpinner(tick_interval = 0)
   tick_spinner.set_label(f"{stem} parsing XML")
   tick_spinner.progress()
   xml_tree = etree.parse(file_path)
