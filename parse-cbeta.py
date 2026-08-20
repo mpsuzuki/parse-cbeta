@@ -331,36 +331,26 @@ def parse_xml_file(file_path: Path, args) -> dict:
     elem_doc_number = xml_root.xpath("//*[local-name()='docNumber']")[0]
   except:
     elem_doc_number = None
-
   if elem_doc_number is not None:
-    elem_first_title_after_doc_number = xml_db_lb.get_next_elem_for_elem("title", elem_doc_number)
-    ad_first_title_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_title_after_doc_number)
-    log_attrdict_info(file_path, ad_first_title_after_doc_number, "after-docnum" )
-
-    elem_first_jhead_after_doc_number  = xml_db_lb.get_next_elem_for_elem("jhead", elem_doc_number)
-    ad_first_jhead_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_jhead_after_doc_number)
-    log_attrdict_info(file_path, ad_first_jhead_after_doc_number, "after-docnum" )
-
-    elem_first_head_after_doc_number  = xml_db_lb.get_next_elem_for_elem("head", elem_doc_number)
-    ad_first_head_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_head_after_doc_number)
-    log_attrdict_info(file_path, ad_first_head_after_doc_number, "after-docnum" )
+    log_elems_after_elem(file_path, xml_db_lb, ["title", "jhead", "head"],
+                         elem_doc_number, prefix = "after-docnum")
 
   try:
     elem_byline = xml_root.xpath("//*[local-name()='byline']")[0]
   except:
     elem_byline = None
   if elem_byline is not None:
-    elem_last_title_before_byline = xml_db_lb.get_previous_elem_for_elem("title", elem_byline)
-    ad_last_title_before_byline   = xml_db_lb.get_info_for_element(elem_last_title_before_byline)
-    log_attrdict_info(file_path, ad_last_title_before_byline, "before-byline")
+    log_elems_before_elem(file_path, xml_db_lb, ["title", "jhead", "head"],
+                          elem_byline, prefix = "before-byline")
 
-    elem_last_jhead_before_byline = xml_db_lb.get_previous_elem_for_elem("jhead", elem_byline)
-    ad_last_jhead_before_byline   = xml_db_lb.get_info_for_element(elem_last_jhead_before_byline)
-    log_attrdict_info(file_path, ad_last_jhead_before_byline, "before-byline")
+  try:
+    elem_div_jing = xml_root.xpath("//*[local-name()='div' and @type='jing']")[0]
+  except:
+    elem_div_jing = None
+  if elem_div_jing is not None:
+    log_elems_before_elem(file_path, xml_db_lb, ["title", "jhead", "head"],
+                          elem_div_jing, prefix = "before-div-jing")
 
-    elem_last_head_before_byline = xml_db_lb.get_previous_elem_for_elem("head", elem_byline)
-    ad_last_head_before_byline   = xml_db_lb.get_info_for_element(elem_last_head_before_byline)
-    log_attrdict_info(file_path, ad_last_head_before_byline, "before-byline")
 
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <byline>")
