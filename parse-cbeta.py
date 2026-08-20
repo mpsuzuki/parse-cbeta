@@ -292,42 +292,40 @@ def parse_xml_file(file_path: Path, args) -> dict:
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <cb:docNumber>")
 
-  seen_title = False
-  docNumbers = xml_root.xpath("//*[local-name()='docNumber']")
-  if len(docNumbers) == 0:
-    logging.warning(f"{file_path}: <cb:docNumber> is not found")
-  else:
-    for i, dn in enumerate(docNumbers):
-      if (elem_title := xml_db_lb.get_next_elem_for_elem("title", dn)) is None:
-        continue
-      parental_tags = "/".join(collect_parental_tagnames(elem_title, "body"))
-      title_text = "".join(collect_texts_from_node(elem_title))
-      lb_n = xml_db_lb.get_previous_lb_attr_n_for_elem(elem_title)
-      logging.info(
-        f"{file_path}: title[{i}] @ {lb_n} {parental_tags} \"{title_text}\""
-      )
-      seen_title = True
-    if not seen_title:
-      elem_after_docNumber = docNumbers[0].getnext()
-      index_after_docNumber = xml_db_lb.xml_order[elem_after_docNumber]
-      elem_lb_after_docNumber    = xml_db_lb.get_next_elem_for_index("lb", index_after_docNumber)
-      elem_jhead_after_docNumber = xml_db_lb.get_next_elem_for_elem("jhead", docNumbers[0])
-      elem_lb_before_jhead       = xml_db_lb.get_previous_elem_for_elem("lb", elem_jhead_after_docNumber)
-      if elem_lb_after_docNumber == elem_lb_before_jhead:
-        jhead_text = "|".join(elem_jhead_after_docNumber.itertext())
-        logging.info(
-          f"{file_path}: jhead @ {lb_n} may has a title \"{jhead_text}\""
-        )
-      else:
-        lb_n_after_docNumber = elem_lb_after_docNumber.get("n")
-        lb_n_before_jhead    = elem_lb_before_jhead.get("n")
-        logging.warning(
-          f"{file_path}: lb_n after docNumber {lb_n_after_docNumber}"
-          f" != lb_n before jhead {lb_n_before_jhead}"
-        )
-        logging.warning(
-          f"{file_path}: no <title> or <cb:jhead> after docNumber"
-        )
+  try:
+    elem_doc_number = xml_root.xpath("//*[local-name()='docNumber']")[0]
+  except:
+    elem_doc_number = None
+
+  if elem_doc_number is not None:
+    elem_first_title_after_doc_number = xml_db_lb.get_next_elem_for_elem("title", elem_doc_number)
+    ad_first_title_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_title_after_doc_number)
+    log_attrdict_info(file_path, ad_first_title_after_doc_number, "after-docnum" )
+
+    elem_first_jhead_after_doc_number  = xml_db_lb.get_next_elem_for_elem("jhead", elem_doc_number)
+    ad_first_jhead_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_jhead_after_doc_number)
+    log_attrdict_info(file_path, ad_first_jhead_after_doc_number, "after-docnum" )
+
+    elem_first_head_after_doc_number  = xml_db_lb.get_next_elem_for_elem("head", elem_doc_number)
+    ad_first_head_after_doc_number   = xml_db_lb.get_info_for_element(elem_first_head_after_doc_number)
+    log_attrdict_info(file_path, ad_first_head_after_doc_number, "after-docnum" )
+
+  try:
+    elem_byline = xml_root.xpath("//*[local-name()='byline']")[0]
+  except:
+    elem_byline = None
+  if elem_byline is not None:
+    elem_last_title_before_byline = xml_db_lb.get_previous_elem_for_elem("title", elem_byline)
+    ad_last_title_before_byline   = xml_db_lb.get_info_for_element(elem_last_title_before_byline)
+    log_attrdict_info(file_path, ad_last_title_before_byline, "before-byline")
+
+    elem_last_jhead_before_byline = xml_db_lb.get_previous_elem_for_elem("jhead", elem_byline)
+    ad_last_jhead_before_byline   = xml_db_lb.get_info_for_element(elem_last_jhead_before_byline)
+    log_attrdict_info(file_path, ad_last_jhead_before_byline, "before-byline")
+
+    elem_last_head_before_byline = xml_db_lb.get_previous_elem_for_elem("head", elem_byline)
+    ad_last_head_before_byline   = xml_db_lb.get_info_for_element(elem_last_head_before_byline)
+    log_attrdict_info(file_path, ad_last_head_before_byline, "before-byline")
 
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <byline>")
