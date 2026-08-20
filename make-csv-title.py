@@ -30,6 +30,12 @@ def parse_args():
   parser.add_argument("--no-bom", action="store_true",
     help="Do not emit BOM at the header of CSV"
   )
+  parser.add_argument("--list-include", "--include", "--incl", type=str,
+    help="File listing XMLs to be included (all files would be included by default)"
+  )
+  parser.add_argument("--list-exclude", "--exclude", "--excl", type=str,
+    help="File listing XMLs to be excluded (no file would be excluded by default)"
+  )
 
   args = parser.parse_args()
 
@@ -51,6 +57,27 @@ def parse_args():
   else:
     args.ctx_summary = nullcontext(sys.stdout)
 
+  args.set_include = None
+  if args.list_include:
+    args.set_include = set()
+    with open(args.list_include, "r", encoding="utf-8") as fh:
+      for line in fh:
+        if line.startswith("#"):
+          continue
+        line = line.split("#", 1)[0].strip()
+        if len(line) > 0:
+          args.set_include.add(line)
+
+  args.set_exclude = None
+  if args.list_exclude:
+    args.set_exclude = set()
+    with open(args.list_exclude, "r", encoding="utf-8") as fh:
+      for line in fh:
+        if line.startswith("#"):
+          continue
+        line = line.split("#", 1)[0].strip()
+        if len(line) > 0:
+          args.set_exclude.add(line)
 
   return args
 
@@ -100,16 +127,6 @@ def make_xml2dic_from_debug_log(fh):
 
 def write_summary1(fh, fieldnames, xml2dic, rows):
   policies = fieldnames[2:]
-  for xml, dic in xml2dic.items():
-    tm = dic[teiHeader_title_m]
-    for k, v in dic.items():
-      if k not in policies:
-        continue
-      if v == tm:
-        dic[k] = "=="
-      elif tm in v:
-        dic[k] = v.replace(tm, "\u2026")
-
   ## summarize "differ" case
   diff2xmls = {}
   for d in rows:
@@ -129,6 +146,7 @@ def write_summary1(fh, fieldnames, xml2dic, rows):
       print(f"differ: \"{d_txt}\" in {len(diff2xmls[d_txt])} XMLs", file=fh)
       continue
 
+    xml = rows[0]["file"]
     title_m = rows[0][teiHeader_title_m]
     sm = None
     if title_m.startswith(d_txt):
@@ -228,6 +246,20 @@ def main():
   with args.ctx_input as fh:
     keys, xml2dic, = make_xml2dic_from_debug_log(fh)
 
+  xml2dic = {
+    k: v
+    for k, v in xml2dic.items()
+    if (
+      (args.set_include is None or k in args.set_include) and
+      (args.set_exclude is None or k not in args.set_exclude)
+    )
+  }
+  for xml in xml2dic.keys():
+    if args.set_include and xml not in args.set_include:
+      xml2dic.pop(xml)
+    if args.set_exclude and xml in args.set_exclude:
+      xml2dic.pop(xml)
+
   rows = []
   for xml in sorted(xml2dic.keys()):
     d = xml2dic[xml]
@@ -240,6 +272,19 @@ def main():
     if k.startswith("after") or k.startswith("before")
   ]
   fieldnames = ["file", teiHeader_title_m] + policies
+
+  # compress the string including 'correct' text
+  policies = fieldnames[2:]
+  for xml, dic in xml2dic.items():
+    tm = dic[teiHeader_title_m]
+    for k, v in dic.items():
+      if k not in policies:
+        continue
+      if v == tm:
+        dic[k] = "=="
+      elif tm in v:
+        dic[k] = v.replace(tm, "\u2026")
+
 
   with args.ctx_summary as fh:
     write_summary1(fh, fieldnames, xml2dic, rows)
