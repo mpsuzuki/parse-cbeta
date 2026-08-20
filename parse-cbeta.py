@@ -289,6 +289,17 @@ def parse_xml_file(file_path: Path, args) -> dict:
       pass
   xml_db_lb = XML_DB_lb(xml_root = xml_root, xml_order = xml_order, xml_elems = xml_elems)
 
+  try:
+    elem_titleStmt_title_m = xml_root.xpath("//*[local-name()='titleStmt']"
+                                            "/*[local-name()='title' and @level='m']")[0]
+  except:
+    elem_titleStmt_title_m = None
+
+  if elem_titleStmt_title_m is not None:
+    teiheader_title_m = "|".join(collect_texts_from_node(elem_titleStmt_title_m))
+    logging.info(f"{file_path} 0000x00 teiHeader titleStmt/title[level='m'] {teiheader_title_m}")
+
+
   if args.verbose: tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
   segments = []
