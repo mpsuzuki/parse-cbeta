@@ -230,13 +230,33 @@ class XML_DB_lb(AttrDict):
       return None
 
 
-def log_attrdict_info(file_path, ad, prefix = ""):
+def log_attrdict_info(file_path, ad, prefix = "", xpath_prefix = "text/"):
   if ad is None:
+    return
+  if not ad.xpath.startswith(xpath_prefix):
     return
   if len(prefix) > 0:
     prefix += " "
-  logging.info(f"{file_path} {prefix}{ad.xpath} @ {ad.lb_n}: {'|'.join(ad.texts)}")
+  logging.info(f"{file_path} {ad.lb_n} {prefix}{ad.xpath} {'|'.join(ad.texts)}")
 
+
+def log_elem_after_elem(file_path, xml_db_lb, tag, elem_ref, prefix = ""):
+  elem = xml_db_lb.get_next_elem_for_elem(tag, elem_ref)
+  ad   = xml_db_lb.get_info_for_element(elem)
+  log_attrdict_info(file_path, ad, prefix)
+
+def log_elem_before_elem(file_path, xml_db_lb, tag, elem_ref, prefix = ""):
+  elem = xml_db_lb.get_previous_elem_for_elem(tag, elem_ref)
+  ad   = xml_db_lb.get_info_for_element(elem)
+  log_attrdict_info(file_path, ad, prefix)
+
+def log_elems_after_elem(file_path, xml_db_lb, tags, elem_ref, prefix = ""):
+  for tag in tags:
+    log_elem_after_elem(file_path, xml_db_lb, tag, elem_ref, prefix)
+
+def log_elems_before_elem(file_path, xml_db_lb, tags, elem_ref, prefix = ""):
+  for tag in tags:
+    log_elem_before_elem(file_path, xml_db_lb, tag, elem_ref, prefix)
 
 
 @profile
