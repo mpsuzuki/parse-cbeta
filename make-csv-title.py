@@ -125,7 +125,7 @@ def make_xml2dic_from_debug_log(fh):
   return (keys, xml2dic)
 
 
-def write_summary1(fh, fieldnames, xml2dic, rows):
+def write_summary1(fh, fieldnames, xml2dic, rows, args):
   policies = fieldnames[2:]
   ## summarize "differ" case
   diff2xmls = {}
@@ -179,7 +179,7 @@ def write_summary1(fh, fieldnames, xml2dic, rows):
     print(file=fh)
 
 
-def write_summary2(fh, policies, xml2dic, rows):
+def write_summary2(fh, policies, xml2dic, rows, args):
   ## summarize
   sets_tested  = { pol: set() for pol in policies }
   sets_equal   = { pol: set() for pol in policies }
@@ -298,8 +298,8 @@ def main():
 
 
   with args.ctx_summary as fh:
-    write_summary1(fh, fieldnames, xml2dic, rows)
-    write_summary2(fh, policies, xml2dic, rows)
+    write_summary1(fh, fieldnames, xml2dic, rows, args)
+    write_summary2(fh, policies, xml2dic, rows, args)
 
   with args.ctx_csv as fh:
     if args.csv is None and not args.no_bom:
