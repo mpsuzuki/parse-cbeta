@@ -183,31 +183,42 @@ def write_summary2(fh, policies, xml2dic, rows):
   ## summarize
   sets_tested  = { pol: set() for pol in policies }
   sets_equal   = { pol: set() for pol in policies }
-  sets_prefix  = { pol: set() for pol in policies }
-  sets_suffix  = { pol: set() for pol in policies }
-  sets_both    = { pol: set() for pol in policies }
+  sets_with_prefix  = { pol: set() for pol in policies }
+  sets_with_suffix  = { pol: set() for pol in policies }
+  sets_with_both    = { pol: set() for pol in policies }
+  sets_lost_prefix  = { pol: set() for pol in policies }
+  sets_lost_suffix  = { pol: set() for pol in policies }
+  sets_lost_both    = { pol: set() for pol in policies }
   sets_differ  = { pol: set() for pol in policies }
   for pol in policies:
     for d in rows:
       if pol not in d or d[pol] is None or len(d[pol]) == 0:
         continue
       fn = d["file"]
+      tei_title = d[teiHeader_title_m]
+      d_pol = d[pol]
       sets_tested[pol].add(fn)
-      if d[pol] == "==":
+      if d_pol == "==":
         sets_equal[pol].add(fn)
-      elif d[pol].startswith("\u2026"):
-        sets_suffix[pol].add(fn)
-      elif d[pol].endswith("\u2026"):
-        sets_prefix[pol].add(fn)
-      elif "\u2026" in d[pol]:
-        sets_both[pol].add(fn)
+      elif d_pol.startswith("\u2026"):
+        sets_with_suffix[pol].add(fn)
+      elif d_pol.endswith("\u2026"):
+        sets_with_prefix[pol].add(fn)
+      elif "\u2026" in d_pol:
+        sets_with_both[pol].add(fn)
+      elif tei_title.startswith(d_pol):
+        sets_lost_suffix[pol].add(fn)
+      elif tei_title.endswith(d_pol):
+        sets_lost_prefix[pol].add(fn)
+      elif d_pol in tei_title:
+        sets_lost_both[pol].add(fn)
       else:
         sets_differ[pol].add(fn)
 
   policies_equal   = order_policies_by_contrib(sets_equal)
-  policies_prefix  = order_policies_by_contrib(sets_prefix)
-  policies_suffix  = order_policies_by_contrib(sets_suffix)
-  policies_both    = order_policies_by_contrib(sets_both)
+  policies_prefix  = order_policies_by_contrib(sets_with_prefix)
+  policies_suffix  = order_policies_by_contrib(sets_with_suffix)
+  policies_both    = order_policies_by_contrib(sets_with_both)
 
   covered_xmls_any = set()
   covered_xmls_equal = set()
@@ -217,18 +228,18 @@ def write_summary2(fh, policies, xml2dic, rows):
   for pol in policies_equal:
     toks = [ f"{pol} brings" ]
     toks.append(f"equal={len(sets_equal[pol] - covered_xmls_equal)}")
-    toks.append(f"with_prefix={len(sets_prefix[pol] - covered_xmls_any)}")
-    toks.append(f"with_suffix={len(sets_suffix[pol] - covered_xmls_any)}")
-    toks.append(f"with_both={len(sets_both[pol] - covered_xmls_any)}")
+    toks.append(f"with_prefix={len(sets_with_prefix[pol] - covered_xmls_any)}")
+    toks.append(f"with_suffix={len(sets_with_suffix[pol] - covered_xmls_any)}")
+    toks.append(f"with_both={len(sets_with_both[pol] - covered_xmls_any)}")
 
     covered_xmls_any     |= (sets_equal[pol] |
-                             sets_prefix[pol] |
-                             sets_suffix[pol] |
-                             sets_both[pol])
+                             sets_with_prefix[pol] |
+                             sets_with_suffix[pol] |
+                             sets_with_both[pol])
     covered_xmls_equal   |= sets_equal[pol]
-    covered_xmls_prefix  |= sets_prefix[pol]
-    covered_xmls_suffix  |= sets_suffix[pol]
-    covered_xmls_both    |= sets_both[pol]
+    covered_xmls_prefix  |= sets_with_prefix[pol]
+    covered_xmls_suffix  |= sets_with_suffix[pol]
+    covered_xmls_both    |= sets_with_both[pol]
 
     print("\t".join(toks), file=fh)
 
