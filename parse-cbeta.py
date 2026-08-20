@@ -150,6 +150,7 @@ class XML_DB_lb(AttrDict):
   xml_order: dict = field(default_factory = dict)
   xml_elems: list = field(default_factory = list)
 
+  @profile
   def get_previous_elem_for_index(self, tag, i):
     try:
       return next(
@@ -160,6 +161,7 @@ class XML_DB_lb(AttrDict):
     except:
       return None
 
+  @profile
   def get_next_elem_for_index(self, tag, i):
     try:
       return next(
@@ -170,6 +172,7 @@ class XML_DB_lb(AttrDict):
     except:
       return None
 
+  @profile
   def get_previous_elem_for_elem(self, tag, elem):
     try:
       i = self.xml_order[elem]
@@ -177,6 +180,7 @@ class XML_DB_lb(AttrDict):
     except:
       return None
 
+  @profile
   def get_next_elem_for_elem(self, tag, elem):
     try:
       i = self.xml_order[elem]
