@@ -130,6 +130,20 @@ def try_key_value_attr(nd, attr_k):
   return f" {attr_k}=\"{attr_v}\""
 
 
+def collect_parental_tagnames(elem, upto = None):
+  cur = elem
+  tags = [ written_tag(cur) ]
+  while (cur := cur.getparent()) is not None:
+    cur_tag = written_tag(cur)
+    tags.append(cur_tag)
+    if upto is None:
+      continue
+    if cur_tag == upto:
+      break
+
+  return reversed(tags)
+
+
 @dataclass
 class XML_DB_lb(AttrDict):
   xml_root: etree._Element | None = None
@@ -198,18 +212,27 @@ class XML_DB_lb(AttrDict):
     except:
       return None
 
-def collect_parental_tagnames(elem, upto = None):
-  cur = elem
-  tags = [ written_tag(cur) ]
-  while (cur := cur.getparent()) is not None:
-    cur_tag = written_tag(cur)
-    tags.append(cur_tag)
-    if upto is None:
-      continue
-    if cur_tag == upto:
-      break
+  def get_info_for_element(self, elem):
+    try:
+      xpath = "/".join(collect_parental_tagnames(elem, "text"))
+      texts = collect_texts_from_node(elem)
+      lb_n = self.get_previous_lb_attr_n_for_elem(elem)
+      return AttrDict.from_dict({
+        "xpath": xpath,
+        "texts": texts,
+        "lb_n": lb_n,
+      })
+    except:
+      return None
 
-  return reversed(tags)
+
+def log_attrdict_info(file_path, ad, prefix = ""):
+  if ad is None:
+    return
+  if len(prefix) > 0:
+    prefix += " "
+  logging.info(f"{file_path} {prefix}{ad.xpath} @ {ad.lb_n}: {'|'.join(ad.texts)}")
+
 
 
 @profile
