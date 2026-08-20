@@ -18,6 +18,7 @@ from cbeta_seg import Segment
 from cbeta_seg import remove_underscore_keys_in_obj
 from tick_spinner import TickSpinner
 from superscript import fromStringASCII as to_sup
+from attrdict import AttrDict
 
 
 # insert profiler if executed under kernprof
@@ -130,7 +131,8 @@ def try_key_value_attr(nd, attr_k):
 
 
 @dataclass
-class XML_DB_lb:
+class XML_DB_lb(AttrDict):
+  xml_root: etree._Element | None = None
   xml_order: dict = field(default_factory = dict)
   xml_elems: list = field(default_factory = list)
 
@@ -238,7 +240,7 @@ def parse_xml_file(file_path: Path, args) -> dict:
     except Exception:
       # logging.debug(f"i={i} type={type(elem)} repr={repr(elem)}")
       pass
-  xml_db_lb = XML_DB_lb(xml_order, xml_elems)
+  xml_db_lb = XML_DB_lb(xml_root = xml_root, xml_order = xml_order, xml_elems = xml_elems)
 
   if args.verbose: tick_spinner.set_label(f"{stem} collect <milestone>")
   milestones = xml_root.xpath("//*[local-name()='milestone']")
