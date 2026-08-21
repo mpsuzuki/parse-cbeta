@@ -39,6 +39,9 @@ def parse_args():
   parser.add_argument("--list-exclude", "--exclude", "--excl", type=str,
     help="File listing XMLs to be excluded (no file would be excluded by default)"
   )
+  parser.add_argument("--add-index-to-csv-header", action="store_true",
+    help="Add index number to CSV header"
+  )
 
   args = parser.parse_args()
 
@@ -315,7 +318,13 @@ def main():
     if args.csv is None and not args.no_bom:
       fh.write("\ufeff")
     writer = csv.DictWriter(fh, fieldnames = fieldnames)
-    writer.writeheader()
+    if args.add_index_to_csv_header:
+      writer.writer.writerow([
+        f"{i}:{f}"
+        for i, f in enumerate(fieldnames, start=1)
+      ])
+    else:
+      writer.writeheader()
     writer.writerows(rows)
 
 if __name__ == "__main__":
