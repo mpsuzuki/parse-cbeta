@@ -42,6 +42,12 @@ def parse_args():
   parser.add_argument("--add-index-to-csv-header", action="store_true",
     help="Add index number to CSV header"
   )
+  parser.add_argument("--only-equal-rows", action="store_true",
+    help="CSV shows the rows including equal case"
+  )
+  parser.add_argument("--no-equal-rows", action="store_true",
+    help="CSV shows the rows without equal cases"
+  )
 
   args = parser.parse_args()
 
@@ -325,7 +331,13 @@ def main():
       ])
     else:
       writer.writeheader()
-    writer.writerows(rows)
+
+    if args.only_equal_rows:
+      writer.writerows([ row for row in rows if "==" in row.values() ])
+    elif args.no_equal_rows:
+      writer.writerows([ row for row in rows if "==" not in row.values() ])
+    else:
+      writer.writerows(rows)
 
 if __name__ == "__main__":
     main()
