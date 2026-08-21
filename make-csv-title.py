@@ -24,6 +24,9 @@ def parse_args():
   parser.add_argument("--csv", type=str,
     help="Output CSV file path (prints to stdout if omitted)"
   )
+  parser.add_argument("--summary-differ", type=str,
+    help="Output 'differ' summary file path (prints to stdout if omitted)"
+  )
   parser.add_argument("--summary", type=str,
     help="Output Summary file path (prints to stdout if omitted)"
   )
@@ -51,6 +54,11 @@ def parse_args():
       args.ctx_csv = open(args.csv, "w", encoding="utf-8-sig")
   else:
     args.ctx_csv = nullcontext(sys.stdout)
+
+  if args.summary_differ:
+    args.ctx_summary_differ = open(args.summary_differ, "w", encoding="utf-8")
+  else:
+    args.ctx_summary_differ = nullcontext(sys.stdout)
 
   if args.summary:
     args.ctx_summary = open(args.summary, "w", encoding="utf-8")
@@ -125,7 +133,7 @@ def make_xml2dic_from_debug_log(fh):
   return (keys, xml2dic)
 
 
-def write_summary1(fh, fieldnames, xml2dic, rows, args):
+def write_summary_differ(fh, fieldnames, xml2dic, rows, args):
   policies = fieldnames[2:]
   ## summarize "differ" case
   diff2xmls = {}
@@ -179,7 +187,7 @@ def write_summary1(fh, fieldnames, xml2dic, rows, args):
     print(file=fh)
 
 
-def write_summary2(fh, policies, xml2dic, rows, args):
+def write_summary(fh, policies, xml2dic, rows, args):
   ## summarize
   sets_tested  = { pol: set() for pol in policies }
   sets_equal   = { pol: set() for pol in policies }
@@ -297,9 +305,11 @@ def main():
         dic[k] = v.replace(tm, "\u2026")
 
 
+  with args.ctx_summary_differ as fh:
+    write_summary_differ(fh, fieldnames, xml2dic, rows, args)
+
   with args.ctx_summary as fh:
-    write_summary1(fh, fieldnames, xml2dic, rows, args)
-    write_summary2(fh, policies, xml2dic, rows, args)
+    write_summary(fh, policies, xml2dic, rows, args)
 
   with args.ctx_csv as fh:
     if args.csv is None and not args.no_bom:
